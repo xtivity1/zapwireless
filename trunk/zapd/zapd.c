@@ -265,19 +265,27 @@ void ParseCommandLine( int argc, const char **argv)
 {
 	int			i;
 
+#ifndef NO_MTUDISC
 	for ( i = 1; i < argc; i++ ) {
 		if ( argv[i][0] == '-' ) {
 			switch ( argv[i][1] ) {
 				case 'M':			// Path MTU Discovery
-					pmtudisc = !strcasecmp(&argv[i][2], "dont") ? IP_PMTUDISC_DONT :
-					           !strcasecmp(&argv[i][2], "want") ? IP_PMTUDISC_WANT :
-					           !strcasecmp(&argv[i][2], "do") ? IP_PMTUDISC_DO : -1;
+					pmtudisc = !strcmp(&argv[i][2], "dont") ? IP_PMTUDISC_DONT :
+					           !strcmp(&argv[i][2], "want") ? IP_PMTUDISC_WANT :
+					           !strcmp(&argv[i][2], "do") ? IP_PMTUDISC_DO : -1;
 					break;
 				default:
 					break;
 			}
 		}
 	}
+#else
+	char		 buf[LOG_MESSAGE_OUTPUT_BUFFER_SIZE];
+
+	for ( i= argc - 1; i >= 1; i-- ) {
+        strcpy( buf, argv[i] );
+	}
+#endif // NO_MTUDISC
 }
 
 /* -------------------------------------------------------------------
@@ -381,13 +389,15 @@ int main( int argc, const char* argv[] )
 
 	if ( zap_socket( 0, 0, &( server.udp_socket_rx ) ) )	{
 		exit_error( "Could not create UDP rx socket\n" );
-	} else {
+	} 
+#ifndef WIN32
+    else {
         int val=1;
         if (setsockopt( server.udp_socket_rx, SOL_SOCKET, SO_TIMESTAMP, ( const char * )&val, sizeof( val ) )) {
             exit_error( "Could not set UDP rx opt\n" );
         }
     }
-
+#endif
 	if ( zap_socket( 0, 0, &( server.udp_socket_tx ) ) )	{
 		exit_error( "Could not create UDP tx socket\n" );
 	}

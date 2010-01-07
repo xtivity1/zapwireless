@@ -93,7 +93,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define ZAP_TYPICAL_TIMEOUT_USEC   5*1000*1000
 
+#ifndef NO_MTUDISC
 int pmtudisc = -1;  // Path MTU discovery: System default (-1), DONT (0), WANT (1) or DO (2)
+#endif // NO_MTUDISC
 
 static char zap_frame_str[11][30] = 
 {
@@ -535,6 +537,7 @@ zap_socket( unsigned __int32 buff_size, int tcp, SOCKET *sock)
 		}
 	}
 
+#ifndef NO_MTUDISC
 	if ( pmtudisc != -1 ) {
         /* Configure PMTU discovery */
 		value = pmtudisc;
@@ -544,6 +547,7 @@ zap_socket( unsigned __int32 buff_size, int tcp, SOCKET *sock)
 			return 1; 
 		}
 	}
+#endif // NO_MTUDISC 
 
 	if ( buff_size ) {
         /* Configure buffering */
