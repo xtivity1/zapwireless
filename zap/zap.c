@@ -1091,11 +1091,13 @@ int zap_parse_args( int argc, char *argv[], zap_config_t *config )
 				case 'f':
 					frames = value;
 					break;
+#ifndef NO_MTUDISC
 				case 'M':			// Path MTU Discovery
-					pmtudisc = !strcasecmp(&argv[i][2], "dont") ? IP_PMTUDISC_DONT :
-					           !strcasecmp(&argv[i][2], "want") ? IP_PMTUDISC_WANT :
-					           !strcasecmp(&argv[i][2], "do") ? IP_PMTUDISC_DO : -1;
+					pmtudisc = !strcmp(&argv[i][2], "dont") ? IP_PMTUDISC_DONT :
+					           !strcmp(&argv[i][2], "want") ? IP_PMTUDISC_WANT :
+					           !strcmp(&argv[i][2], "do") ? IP_PMTUDISC_DO : -1;
 					break;
+#endif // NO_MTUDISC
 				case 'a':			// Batch size- Average size- Sample size
 					if ( value == 0 ) {
 						value = 1;
@@ -1262,9 +1264,11 @@ int zap_parse_args( int argc, char *argv[], zap_config_t *config )
 	//Print the current engaging information, it includes -p, -n, -l, -q option
 	fprintf(stdout, "Engaging default options -p%d -n%d -l%d -q0x%x\n", config->station_config.batch_time, 
 		config->station_config.batches, config->station_config.payload_length, config->ip_tos);
+#ifndef NO_MTUDISC
 	if (pmtudisc != -1) {
 		fprintf(stdout, "Engaging explicit option %s\n", ip_pmtudisc_str(pmtudisc));
 	}
+#endif // NO_MTUDISC
 	fprintf(stdout, "\n");
 
 	//Dump this information to log file in the case we set -D option
@@ -1272,9 +1276,11 @@ int zap_parse_args( int argc, char *argv[], zap_config_t *config )
 		fileio = fopen( config->debugfile, "a+" );
 		fprintf(fileio, "Engaging default options -p%d -n%d -l%d -q0x%x\n", config->station_config.batch_time, 
 			config->station_config.batches, config->station_config.payload_length, config->ip_tos);
+#ifndef NO_MTUDISC
 		if (pmtudisc != -1) {
 			fprintf(fileio, "Engaging explicit option %s\n", ip_pmtudisc_str(pmtudisc));
 		}
+#endif // NO_MTUDISC
 		fprintf(fileio, "\n");
 		fclose(fileio);
 	}
@@ -1286,7 +1292,7 @@ int zap( int argc, char *argv[] )
 {
 	zap_config_t			config;
 	
-    fprintf( stdout, "%s version %d.%d, Copyright ( C ) 2004-2006 Ruckus Wireless, Inc. All Rights Reserved.\n",
+    fprintf( stdout, "%s version %d.%d, Copyright ( C ) 2004-2009 Ruckus Wireless, Inc. All Rights Reserved.\n",
 		argv[0],
         ZAP_MAJOR_VERSION,
         ZAP_MINOR_VERSION );
@@ -1311,8 +1317,10 @@ int zap( int argc, char *argv[] )
 		fprintf( stderr, "                          UDP: 1472 bytes.\n" );
 		fprintf( stderr, "     -f<frames>         - Specifies how many full-length frames you want to use for framelength. Takes\n" );
 		fprintf( stderr, "                          fragmentation into account. Completely overrides -l\n" );
+#ifndef NO_MTUDISC
 		fprintf( stderr, "     -M<pmtudisc hint>  - Specifies Path MTU Discovery (PMTUDISC) strategy. Options are: \n");
 		fprintf( stderr, "                          do (always DF); want (do and fragment locally); dont (never DF).\n");
+#endif // NO_MTUDISC
 		fprintf( stderr, "     -a<sample size>    - <sample size> is the number of payloads sampled for performance measurement.\n" );
 		fprintf( stderr, "                          This is the near-equivalent of zing's -E option. Defaults to 50.\n" );
 		fprintf( stderr, "                          This option is mutually exclusive from -p option.\n" );

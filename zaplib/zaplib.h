@@ -78,7 +78,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define errOut	printf( "%s( %d ) : ", __FILE__, __LINE__ ); printf
 
 #define ZAP_MAJOR_VERSION					1
-#define ZAP_MINOR_VERSION					9
+#define ZAP_MINOR_VERSION					83
 
 #define MAX_PACKET_LEN						65536
 #define ZAP_SERVICE_PORT					18301
@@ -91,12 +91,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GENERIC_INFO                        1
 #define DETAIL_INFO                         2
 
-#define	ip_pmtudisc_str(val) \
-	(val == IP_PMTUDISC_DONT) ? "IP_PMTUDISC_DONT (Never DF)" : \
-	(val == IP_PMTUDISC_WANT) ? "IP_PMTUDISC_WANT (Per route DF)" : \
-	(val == IP_PMTUDISC_DO)   ? "IP_PMTUDISC_DO (Always DF)" : \
-        "IP_PMTUDISC_WANT (System default)"
+#define NO_MTUDISC
+
+#ifndef NO_MTUDISC
+#if defined(LINUX)
+ #define ip_pmtudisc_str(val) \
+  (val == IP_PMTUDISC_DONT) ? "IP_PMTUDISC_DONT (Never DF)" : \
+  (val == IP_PMTUDISC_WANT) ? "IP_PMTUDISC_WANT (Per route DF)" : \
+  (val == IP_PMTUDISC_DO)   ? "IP_PMTUDISC_DO (Always DF)" : \
+         "IP_PMTUDISC_WANT (System default)"
+#else
+#define IP_PMTUDISC_DONT   0 /* Never send DF frames.  */
+#define IP_PMTUDISC_WANT   1 /* Use per route hints.  */
+#define IP_PMTUDISC_DO     2 /* Always DF.  */
+#define ip_pmtudisc_str(val) \
+ "unsupported"
+#ifndef IP_MTU_DISCOVER
+#define IP_MTU_DISCOVER 10
+#endif
+#endif
 extern int pmtudisc;  // Path MTU discovery: System default (-1), DONT (0), WANT (1) or DO (2)
+#endif // NO_MTUDISC
 
 typedef struct {
 	unsigned __int32 *data;
