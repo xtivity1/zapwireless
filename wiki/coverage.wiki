@@ -1,5 +1,3 @@
-#zap in the news
-
 == Measuring WLAN Performance: Ruckus Goes Open Source ==
 A step towards a tool that really measures wireless performance
 
